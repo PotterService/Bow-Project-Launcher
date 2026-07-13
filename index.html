@@ -1,152 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Bow Project Launcher</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ffe6ff, #e6f7ff);
-      color: #222;
-    }
-
-    header {
-      text-align: center;
-      padding: 30px 15px;
-      background: white;
-      box-shadow: 0 2px 10px #0002;
-    }
-
-    h1 {
-      margin: 0;
-      color: #8a2be2;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-      padding: 25px;
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 15px #0002;
-      border: 2px solid #f0d9ff;
-    }
-
-    .card h2 {
-      margin-top: 0;
-      color: #6a0dad;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 15px;
-    }
-
-    a {
-      text-decoration: none;
-      background: #8a2be2;
-      color: white;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-weight: bold;
-    }
-
-    a.github {
-      background: #333;
-    }
-
-    .status {
-      text-align: center;
-      padding: 20px;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Bow Project Store</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<header>
-  <h1>🦄 Bow Project Launcher</h1>
-  <p>Public HTML projects from PotterService</p>
+<header class="site-header">
+  <a class="brand" href="index.html"><span class="brand-icon">🦄</span><span><strong>Bow Project Store</strong><small>PotterService Projects</small></span></a>
+  <div class="header-tools">
+    <label class="search-box"><span>🔎</span><input id="searchInput" placeholder="Search projects..."></label>
+    <button id="themeButton" class="icon-button">🌙</button>
+  </div>
 </header>
-
-<div class="status" id="status">Checking repositories...</div>
-<div class="grid" id="projects"></div>
-
-<script>
-const USERNAME = "PotterService";
-const projectsBox = document.getElementById("projects");
-const statusBox = document.getElementById("status");
-
-async function checkRepos() {
-  try {
-    const repoResponse = await fetch(`https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=updated`);
-    const repos = await repoResponse.json();
-
-    projectsBox.innerHTML = "";
-    let found = 0;
-
-    for (const repo of repos) {
-      if (repo.fork) continue;
-
-      const hasIndex = await fileExists(repo.name, "index.html");
-
-      if (hasIndex) {
-        found++;
-
-        const siteUrl = `https://${USERNAME.toLowerCase()}.github.io/${repo.name}/`;
-
-        const card = document.createElement("div");
-        card.className = "card";
-
-        card.innerHTML = `
-          <h2>${repo.name}</h2>
-          <p>${repo.description || "No description added yet."}</p>
-          <p><strong>Updated:</strong> ${new Date(repo.updated_at).toLocaleDateString()}</p>
-          <div class="buttons">
-            <a href="${siteUrl}" target="_blank">Open Site</a>
-            <a class="github" href="${repo.html_url}" target="_blank">Open GitHub</a>
-          </div>
-        `;
-
-        projectsBox.appendChild(card);
-      }
-    }
-
-    statusBox.textContent = found
-      ? `Found ${found} website project(s).`
-      : "No repositories with index.html found yet.";
-
-  } catch (error) {
-    statusBox.textContent = "Could not load repositories.";
-    console.error(error);
-  }
-}
-
-async function fileExists(repoName, fileName) {
-  const url = `https://api.github.com/repos/${USERNAME}/${repoName}/contents/${fileName}`;
-
-  try {
-    const response = await fetch(url);
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
-
-checkRepos();
-</script>
-
+<nav class="category-nav" id="categoryNav"></nav>
+<main>
+  <section id="featuredSection" class="featured-section"></section>
+  <section class="stats-grid">
+    <article><span>Visible Projects</span><strong id="statProjects">0</strong></article>
+    <article><span>Categories</span><strong id="statCategories">0</strong></article>
+    <article><span>Local Downloads</span><strong id="statDownloads">0</strong></article>
+    <article><span>Recently Updated</span><strong id="statUpdated">0</strong></article>
+  </section>
+  <section class="section-heading">
+    <div><p class="eyebrow">Project Library</p><h1>Apps, websites, tools, and experiments</h1><p id="resultText">Loading projects...</p></div>
+    <select id="sortSelect"><option value="order">Featured order</option><option value="updated">Recently updated</option><option value="name">Name A–Z</option></select>
+  </section>
+  <section id="projectGrid" class="project-grid"></section>
+</main>
+<footer><strong>Bow Project Store</strong><span>Created by PotterService</span></footer>
+<dialog id="projectDialog">
+  <article class="dialog-card">
+    <button id="dialogClose" class="dialog-close">×</button>
+    <div class="dialog-cover" id="dialogCover"></div>
+    <p id="dialogCategory" class="eyebrow"></p>
+    <h2 id="dialogName"></h2>
+    <p id="dialogDescription" class="dialog-description"></p>
+    <div class="detail-grid">
+      <div><span>Version</span><strong id="dialogVersion"></strong></div>
+      <div><span>Status</span><strong id="dialogStatus"></strong></div>
+      <div><span>Updated</span><strong id="dialogUpdated"></strong></div>
+      <div><span>Local Use</span><strong id="dialogLocal"></strong></div>
+    </div>
+    <section class="changelog-box"><h3>Latest Changes</h3><p id="dialogChangelog"></p></section>
+    <div class="dialog-actions">
+      <a id="dialogWebsite" class="button primary" target="_blank">Open Website</a>
+      <a id="dialogGithub" class="button secondary" target="_blank">View GitHub</a>
+      <a id="dialogDownload" class="button download">Download ZIP</a>
+    </div>
+  </article>
+</dialog>
+<script src="app.js"></script>
 </body>
 </html>
