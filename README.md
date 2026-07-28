@@ -8,7 +8,7 @@ Bow Project Launcher automatically scans public GitHub repositories and displays
 
 ## Live Website
 
-https://launcher.potterservice.com
+https://sites.potterservice.com
 
 ---
 
